@@ -122,7 +122,7 @@ select * from Suspect;
 3 rows in set (0.00 sec)
 
 
---ADDING AGE COLUMN--
+--ADDING AGE INTO THE TABLES--------
 
 ALTER TABLE Victim
 ADD Age INT;
@@ -154,12 +154,15 @@ END;
 
 
 
-1. select * from crime
+1. Select all open incidents.
+
+select * from crime
     -> where status = 'open';
 
 
 
-2. select count(*) AS total_incidents
+2. Find the total number of incidents.
+select count(*) AS total_incidents
     -> from crime;
 +-----------------+
 | total_incidents |
@@ -170,11 +173,14 @@ END;
 
 
 
-3. select DISTINCT IncidentType from crime;
+3.List all unique incident types.
+ select DISTINCT IncidentType from crime;
 
 
 
-4. select * from crime
+4. Retrieve incidents that occurred between '2023-09-01' and '2023-09-10'.
+
+select * from crime
     -> where IncidentDate BETWEEN '2023-09-01' AND '2023-09-10';
 +---------+--------------+--------------+-------------------------+--------------------------------+--------+
 | CrimeID | IncidentType | IncidentDate | Location                | Description                    | Status |
@@ -185,7 +191,9 @@ END;
 
 
 
-5. SELECT v.Name AS PersonName, v.Age, 'Victim' AS Role
+5. List persons involved in incidents in descending order of age.
+
+SELECT v.Name AS PersonName, v.Age, 'Victim' AS Role
 FROM Victim v
 UNION ALL
 SELECT s.Name AS PersonName, s.Age, 'Suspect' AS Role
@@ -193,23 +201,33 @@ FROM Suspect s
 ORDER BY Age DESC;  
 
 
-6. SELECT AVG(Age) AS AverageAge
+6. Find the average age of persons involved in incidents.
+
+
+SELECT AVG(Age) AS AverageAge
 FROM (SELECT Age FROM Victim
 UNION ALL
 SELECT Age FROM Suspect) AS AllPersons;
 
 
-7. SELECT IncidentType, COUNT(*) AS IncidentCount
-    -> FROM Crime
-    -> WHERE Status = 'Open'
-    -> GROUP BY IncidentType;
+7. List incident types and their counts, only for open cases.
 
-8.  select Name, ContactInfo from victim
+ SELECT IncidentType, COUNT(*) AS IncidentCount
+ FROM Crime
+ WHERE Status = 'Open'
+ GROUP BY IncidentType;
+
+
+8. Find persons with names containing 'Doe'.
+
+select Name, ContactInfo from victim
     -> where Name LIKE '%Doe%';
 
 
 
-9.  select Name, 'Victim' AS Role, c.Status
+9. Retrieve the names of persons involved in open cases and closed cases.
+
+select Name, 'Victim' AS Role, c.Status
     -> from victim v
     -> JOIN crime c ON v.crimeID = c.crimeID
     -> where c.status IN ('Open','Closed')
@@ -219,13 +237,19 @@ SELECT Age FROM Suspect) AS AllPersons;
     -> JOIN crime c ON s.Crime_ID = c.CrimeID
     -> Where c.status IN ('Open','Closed');
 
-10. SELECT DISTINCT c.IncidentType
+10. . List incident types where there are persons aged 30 or 35 involved.
+
+ SELECT DISTINCT c.IncidentType
     -> FROM Crime c
     -> LEFT JOIN Victim v ON c.CrimeID = v.CrimeID
     -> LEFT JOIN Suspect s ON c.CrimeID = s.Crime_ID
     -> WHERE v.Age IN (30, 35) OR s.Age IN (30, 35);
 
-11. SELECT v.Name AS PersonName, 'Victim' AS Role, c.IncidentType
+
+11.  Find persons involved in incidents of the same type as 'Robbery'.
+
+
+SELECT v.Name AS PersonName, 'Victim' AS Role, c.IncidentType
     -> FROM Victim v
     -> JOIN Crime c ON v.CrimeID = c.CrimeID
     -> WHERE c.IncidentType = 'Robbery'
@@ -235,13 +259,17 @@ SELECT Age FROM Suspect) AS AllPersons;
     -> JOIN Crime c ON s.Crime_ID = c.CrimeID
     -> WHERE c.IncidentType = 'Robbery';
 
-12. select IncidentType, count(*) AS OpenCaseCount
+12. List incident types with more than one open case. 
+
+select IncidentType, count(*) AS OpenCaseCount
     -> from crime
     -> where status = 'Open'
     -> Group By IncidentType
     -> Having count(*) > 1;
 
-13. SELECT DISTINCT c.*
+13. List all incidents with suspects whose names also appear as victims in other incidents.
+
+SELECT DISTINCT c.*
     -> FROM Crime c
     -> JOIN Suspect s ON c.CrimeID = s.Crime_ID
     -> WHERE s.Name IN (
@@ -250,31 +278,31 @@ SELECT Age FROM Suspect) AS AllPersons;
     ->     WHERE v.CrimeID <> c.CrimeID
     -> );
 
-14.  SELECT
-    ->     c.CrimeID,
-    ->     c.IncidentType,
-    ->     c.IncidentDate,
-    ->     c.Location,
-    ->     c.Description AS IncidentDescription,
-    ->     c.Status,
-    ->     v.Name AS VictimName,
-    ->     v.ContactInfo AS VictimContactInfo,
-    ->     v.Injuries AS VictimInjuries,
-    ->     s.Name AS SuspectName,
-    ->     s.Description AS SuspectDescription,
-    ->     s.CriminalHistory AS SuspectCriminalHistory
-    -> FROM Crime c
-    -> LEFT JOIN Victim v ON c.CrimeID = v.CrimeID
-    -> LEFT JOIN Suspect s ON c.CrimeID = s.Crime_ID;
+14.  Retrieve all incidents along with victim and suspect details.
 
 
-15.  SELECT DISTINCT c.*
+SELECT
+c.CrimeID, c.IncidentType, c.IncidentDate, c.Location, c.Description AS IncidentDescription, c.Status,
+v.Name AS VictimName, v.ContactInfo AS VictimContactInfo, v.Injuries AS VictimInjuries,
+s.Name AS SuspectName, s.Description AS SuspectDescription, s.CriminalHistory AS SuspectCriminalHistory
+FROM Crime c
+LEFT JOIN Victim v ON c.CrimeID = v.CrimeID
+LEFT JOIN Suspect s ON c.CrimeID = s.Crime_ID;
+
+
+15. Find incidents where the suspect is older than any victim
+
+SELECT DISTINCT c.*
     -> FROM Crime c
     -> JOIN Victim v ON c.CrimeID = v.CrimeID
     -> JOIN Suspect s ON c.CrimeID = s.Crime_ID
     -> WHERE s.Age > v.Age;
 
-16. SELECT
+
+
+16.Find suspects involved in multiple incidents:
+
+ SELECT
     -> s.SuspectID,
     -> s.Name AS SuspectName,
     -> COUNT(DISTINCT s.Crime_ID) AS IncidentCount
@@ -282,13 +310,19 @@ SELECT Age FROM Suspect) AS AllPersons;
     -> GROUP BY s.SuspectID, s.Name
     -> HAVING COUNT(DISTINCT s.Crime_ID) > 1;
 
-17. 
+17. List incidents with no suspects involved.
 mysql> SELECT c.*
     -> FROM Crime c
     -> LEFT JOIN Suspect s ON c.CrimeID = s.Crime_ID
     -> WHERE s.SuspectID IS NULL;
 
-18. SELECT c.CrimeID
+
+
+18. List all cases where at least one incident is of type 'Homicide' and all other incidents are of type
+'Robbery'
+
+
+SELECT c.CrimeID
     -> FROM Crime c
     -> WHERE c.IncidentType IN ('Homicide', 'Robbery')
     -> GROUP BY c.CrimeID
@@ -296,10 +330,22 @@ mysql> SELECT c.*
     ->    AND SUM(CASE WHEN c.IncidentType = 'Robbery' THEN 1 ELSE 0 END) = COUNT(*)
     -> ;
 
+----Subquery Method---
+SELECT CrimeID
+FROM Crime
+WHERE IncidentType = 'Homicide'
+   OR CrimeID IN (SELECT CrimeID FROM Crime 
+   WHERE IncidentType = 'Robbery')
+
+GROUP BY CrimeID
+HAVING COUNT(DISTINCT IncidentType) = 2;
+
+
 19. 
 
 
-20. 
+20. List all suspects who have been involved in incidents with incident types 'Robbery' or 'Assault'
+
 mysql> SELECT DISTINCT
     ->s.SuspectID,
     -> s.Name AS SuspectName
